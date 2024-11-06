@@ -91,6 +91,7 @@ async function pageFromCategory(categoryString) {
 
 function updateImg(imgElm, descElm, json) {
   imgElm.src = json.thumbnail.source;
+  imgElm.onclick = function() {window.open(json.content_urls.desktop.page, '_blank').focus()};
   imgElm.height = json.thumbnail.height;
   imgElm.width = json.thumbnail.width;
   imgElm.title = json.extract;
@@ -121,8 +122,12 @@ function updateP(elm, s) {
   elm.innerHTML = s;
 }
 
-function updateStats(age, year, month, day) {
-  updateP(statsP, 'age: ' + age + ', date: ' + monthMap[month] + ' ' + day + ', ' + year);
+function updateStats(age, year, month, day, death=false) {
+  if (!death) {
+    updateP(statsP, 'age: ' + age.toFixed(2) + ' years old<br></br>date: ' + monthMap[month] + ' ' + day + ', ' + year);
+  } else {
+    updateP(statsP, 'age: ' + age.toFixed(2) + ' years old<br></br>date: ' + monthMap[month] + ' ' + day + ', ' + year + ' (newts usually live for between 12 and 15 years, but I didnt want to make a long scrapbook)');
+  }
 }
 
 function updateMap() {
@@ -174,10 +179,12 @@ async function doPassion(passion) {
 }
 
 function continueGame() {
+  if (!isHoliday && !isHolidayResult) {
+    isHoliday = true;
+  }
   if (age > deathAge || imageI >= 6) {
     updateP(mainP, 'Your newt legs creak, your newt breath whistles. Your short newt life has come to an end. With your last moments you gaze back on your life, carefully recorded in your newt scrap book.');
-  } else if (!isHoliday && !isHolidayResult) {
-    isHoliday = true;
+    updateStats(age, year, month, day, true);
   } else if (isHoliday) {
     vacacions++;
     isHoliday = false;
@@ -204,7 +211,9 @@ function continueGame() {
     year++;
   }
   updateAge();
-  updateStats(age, year, month, day);
+  if (!(age > deathAge || imageI >= 6)) {
+    updateStats(age, year, month, day);
+  }
 }
 
 async function asyncCall() {

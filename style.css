@@ -14,8 +14,10 @@
 }
 
 .polaroid > img{
+  display: block;
   max-width: 100%;
   height: auto;
+  margin: auto;
 }
 
 .polaroid > img:hover{
@@ -28,18 +30,13 @@
   text-align: center;
   line-height: 2em;
 }
+
 .item {
   width: 30%;
   margin-top: 2rem;
   display: inline-block;
 }
 
-.item .polaroid:before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  transition: all 0.35s;
-}
 .item:nth-of-type(4n+1) {
   transform: scale(0.8, 0.8) rotate(5deg);
   transition: all 0.35s;
