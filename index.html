@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Newt Scrap Book</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <p id='main-text'></p>
+  <p id='stats-text'></p>
+  <div class="wrapper">
+    <div class="item" style="display: none;">
+      <div class="polaroid">
+        <img>
+        <div id="description" class="caption"></div>
+      </div>
+    </div>
+    <div class="item" style="display: none;">
+      <div class="polaroid">
+        <img>
+        <div id="description" class="caption"></div>
+      </div>
+    </div>
+    <div class="item" style="display: none;">
+      <div class="polaroid">
+        <img>
+        <div id="description" class="caption"></div>
+      </div>
+    </div>
+    <div class="item" style="display: none;">
+      <div class="polaroid">
+        <img>
+        <div id="description" class="caption"></div>
+      </div>
+    </div>
+    <div class="item" style="display: none;">
+      <div class="polaroid">
+        <img>
+        <div id="description" class="caption"></div>
+      </div>
+    </div>
+    <div class="item" style="display: none;">
+      <div class="polaroid">
+        <img>
+        <div id="description" class="caption"></div>
+      </div>
+    </div>
+  </div>
+</body>
+<script>
+var mainP = document.getElementById('main-text');
+var statsP = document.getElementById('stats-text');
+var items = document.querySelectorAll('.wrapper > .item');
+var imageI = 0;
+var passions = ['making music', 'studying insects', 'studying plants', 'hiking', 'philosophy', 'scientific theory', 'writing novels', 'finding love'];
+var vacacions = 0;
+var age = 0;
+var myPassions = [];
+var deathAge, year, month, day, birthyYear, birthMonth, birthDay, passionAPIMap, lastJSON, lastPassion;
+var isHoliday = false;
+var isHolidayResult = false;
+const monthMap = {1: 'January', 2: 'February', 3: 'March', 4: 'April', 5: 'May', 6: 'June', 7: 'July', 8: 'August', 9: 'September', 10: 'October', 11: 'November', 12: 'December'}
+const passionVerbMap = {
+  'making music': 'You composed',
+  'studying insects': 'You discovered',
+  'studying plants': 'You discovered',
+  'hiking': 'You went to',
+  'philosophy': 'You wrote',
+  'scientific theory': 'You wrote',
+  'writing novels': 'You wrote',
+  'finding love': 'You fell in love with',
+};
+
+async function pageFromCategory(categoryString) {
+  const catResp = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=categorymembers&format=json&origin=*&cmtitle=Category:' + categoryString + '&cmprop=ids|title|timestamp&cmsort=timestamp&cmdir=desc&cmlimit=100');
+  const catJson = await catResp.json();
+  categoryMembers = catJson.query.categorymembers;
+  var randomIndex = Math.floor(Math.random() * categoryMembers.length);
+  var mainJson = {}
+  while (!mainJson.thumbnail) {
+    if (randomIndex >= categoryMembers.length) {
+      randomIndex = 0;
+    }
+    var randomMember = categoryMembers[randomIndex];
+    const mainRequest = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + randomMember.title.replace(/ /g, '_'));
+    mainJson = await mainRequest.json();
+    randomIndex++;
+  }
+  return mainJson;
+}
+
+function updateImg(imgElm, descElm, json) {
+  imgElm.src = json.thumbnail.source;
+  imgElm.height = json.thumbnail.height;
+  imgElm.width = json.thumbnail.width;
+  imgElm.title = json.extract;
+  descElm.innerHTML = json.titles.normalized;
+}
+
+function gaussianRandom(mean=0, stdev=1) {
+  const u = 1 - Math.random(); // Converting [0,1) to (0,1]
+  const v = Math.random();
+  const z = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+  // Transform to the desired mean and standard deviation:
+  return z * stdev + mean;
+}
+
+function getAge() {
+  var age = gaussianRandom(2, stdev=1);
+  if (age < 1) {
+    age = gaussianRandom(2, stdev=1);
+  }
+  return age;
+}
+
+function startYear() {
+  return Math.floor(Math.random() * (2010 - 1955 + 1)) + 1955;
+}
+
+function updateP(elm, s) {
+  elm.innerHTML = s;
+}
+
+function updateStats(age, year, month, day) {
+  updateP(statsP, 'age: ' + age + ', date: ' + monthMap[month] + ' ' + day + ', ' + year);
+}
+
+function updateMap() {
+  passionAPIMap = {
+    'making music': year + '_albums',
+    'studying insects': 'Insects_described_in_' + year,
+    'studying plants': 'Plants_described_in_' + year,
+    'hiking': 'Sacred_mountains_of_the_Americas',
+    'philosophy': 'Philosophy_books',
+    'scientific theory': 'Science_books',
+    'writing novels': year + '_American_novels',
+    'finding love': year - Math.floor(Math.random() * (60 - 1 + 20)) + 20 + '_births'
+  };
+}
+
+function setupNewGame() {
+  var passionIndexes = new Set();
+  while (passionIndexes.size < 3) {
+    passionIndexes.add(Math.floor(Math.random() * passions.length));
+  }
+  passionIndexes.forEach((item, i) => {
+    myPassions.push(passions[item]);
+  });
+  deathAge = getAge();
+  year = startYear();
+  month = Math.floor(Math.random() * (12 - 1 + 1)) + 1;
+  day = Math.floor(Math.random() * (28 - 1 + 1)) + 1;
+  birthYear = year;
+  birthMonth = month;
+  birthDay = day;
+  updateP(mainP, 'Today is ' + monthMap[month] + ' ' + day + ', ' + year + ' and you are a newt. You have just hatched from your newt egg straight into your newt job. Luckily you will get two weeks of paid vacacion time every year. After careful consideration you decide you would like to dedicate the time in your life to ' + myPassions[0] + ', ' + myPassions[1] + ', and ' + myPassions[2] + '! <span class="fake-link" onclick="continueGame();">Click here to continue.</span>');
+  updateStats(0, year, month, day);
+  updateMap();
+}
+
+function updateAge() {
+  age = year - birthYear + (month - birthMonth) / 12 + (day - birthDay) / 365;
+}
+
+async function doPassion(passion) {
+  var json = await pageFromCategory(passionAPIMap[passion]);
+  let children = items[imageI].children[0].children;
+  items[imageI].style.display = 'inline-block';
+  updateImg(children[0], children[1], json);
+  imageI++;
+  lastJSON = json;
+  lastPassion = passion;
+  continueGame();
+}
+
+function continueGame() {
+  if (age > deathAge || imageI >= 6) {
+    updateP(mainP, 'Your newt legs creak, your newt breath whistles. Your short newt life has come to an end. With your last moments you gaze back on your life, carefully recorded in your newt scrap book.');
+  } else if (!isHoliday && !isHolidayResult) {
+    isHoliday = true;
+  } else if (isHoliday) {
+    vacacions++;
+    isHoliday = false;
+    isHolidayResult = true;
+    //update date
+    let oldMonth = month;
+    while (month < oldMonth) {
+      month = Math.floor(Math.random() * (12 - 1 + 1)) + 1;
+    }
+    day = Math.floor(Math.random() * (28 - 1 + 1)) + 1;
+    updateMap();
+    let options = ''
+    myPassions.forEach((passion, i) => {
+      options += '<span class="fake-link" onclick="doPassion(' + "'" + passion + "'" + ');">' + passion + '</span> ';
+    });
+    updateP(mainP, "You've decided to take a newt holiday on " + monthMap[month] + ' ' + day + ', ' + year + '. What do you want to spend your time doing? ' + options);
+  } else if (isHolidayResult) {
+    isHoliday = true;
+    isHolidayResult = false;
+    updateP(mainP, passionVerbMap[lastPassion] + ' ' + lastJSON.titles.normalized + '. <span class="fake-link" onclick="continueGame();">Click here to continue.</span>');
+  }
+  if (vacacions >= 2) {
+    vacacions = 0;
+    year++;
+  }
+  updateAge();
+  updateStats(age, year, month, day);
+}
+
+async function asyncCall() {
+  setupNewGame();
+}
+asyncCall();
+</script>
+</html>
